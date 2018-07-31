@@ -100,6 +100,20 @@ type LogicalInterface struct {
 	LinkAddress        string `xml:"link-address,omitempty"`
 }
 
+type IsisInterfaces struct {
+	Entries []IsisInterface `xml:"isis-interface"`
+}
+
+type IsisInterface struct {
+	Name        string `xml:"interface-name"`
+	CircuitType string `xml:"circuit-type"`
+	CircuitId   string `xml:"circuit-id"`
+	StateOne    string `xml:"isis-interface-state-one"`
+	StateTwo    string `xml:"isis-interface-state-two"`
+	MetricOne   string `xml:"metric-one"`
+	MetricTwo   string `xml:"metric-two"`
+}
+
 // Vlans contains all of the VLAN information on the device.
 type Vlans struct {
 	Entries []Vlan `xml:"l2ng-l2ald-vlan-instance-group"`
@@ -398,6 +412,7 @@ type Views struct {
 	SourceNat      SourceNats
 	Storage        Storage
 	FirewallPolicy FirewallPolicy
+	IsisInterface  IsisInterfaces
 }
 
 var (
@@ -414,6 +429,7 @@ var (
 		"sourcenat":      "<get-source-nat-rule-sets-information><all/></get-source-nat-rule-sets-information>",
 		"storage":        "<get-system-storage/>",
 		"firewallpolicy": "<get-firewall-policies/>",
+		"isis-interface": "<get-isis-interface-information/>",
 	}
 )
 
@@ -669,6 +685,15 @@ func (j *Junos) View(view string) (*Views, error) {
 
 			results.FirewallPolicy = fwpolicy
 		}
+	case "isis-interface":
+		var ints IsisInterfaces
+		formatted := strings.Replace(reply.Data, "\n", "", -1)
+
+		if err := xml.Unmarshal([]byte(formatted), &ints); err != nil {
+			return nil, err
+		}
+
+		results.IsisInterface = ints
 	}
 
 	return &results, nil
