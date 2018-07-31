@@ -8,6 +8,12 @@ import (
 	"github.com/Juniper/go-netconf/netconf"
 )
 
+type SoftwareInfo struct {
+	Hostname     string `xml:"host-name"`
+	ProductModal string `xml:"product-model"`
+	JunosVersion string `xml:"junos-version"`
+}
+
 // ArpTable contains the ARP table on the device.
 type ArpTable struct {
 	Count   int        `xml:"arp-entry-count"`
@@ -413,6 +419,7 @@ type Views struct {
 	Storage        Storage
 	FirewallPolicy FirewallPolicy
 	IsisInterface  IsisInterfaces
+	Software       SoftwareInfo
 }
 
 var (
@@ -430,6 +437,7 @@ var (
 		"storage":        "<get-system-storage/>",
 		"firewallpolicy": "<get-firewall-policies/>",
 		"isis-interface": "<get-isis-interface-information/>",
+		"software":       "<get-software-information/>",
 	}
 )
 
@@ -694,6 +702,15 @@ func (j *Junos) View(view string) (*Views, error) {
 		}
 
 		results.IsisInterface = ints
+	case "software":
+		var software SoftwareInfo
+		formatted := strings.Replace(reply.Data, "\n", "", -1)
+
+		if err := xml.Unmarshal([]byte(formatted), &software); err != nil {
+			return nil, err
+		}
+
+		results.Software = software
 	}
 
 	return &results, nil
