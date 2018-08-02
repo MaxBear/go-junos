@@ -83,6 +83,7 @@ type AuthMethod struct {
 	Username    string
 	PrivateKey  string
 	Passphrase  string
+	SshTimeout  time.Duration
 }
 
 // CommitHistory holds all of the commit entries.
@@ -200,7 +201,7 @@ func NewSession(host string, auth *AuthMethod) (*Junos, error) {
 	rex := regexp.MustCompile(`^.*\[(.*)\]`)
 	clientConfig := genSSHClientConfig(auth)
 
-	s, err := netconf.DialSSH(host, clientConfig)
+	s, err := netconf.DialSSHTimeout(host, clientConfig, auth.SshTimeout)
 	if err != nil {
 		panic(fmt.Errorf("error connecting to %s - %s", host, err))
 	}
