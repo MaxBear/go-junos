@@ -85,6 +85,7 @@ type PhysicalInterface struct {
 // LogicalInterface contains information about the logical interfaces tied to a physical interface.
 type LogicalInterface struct {
 	Name               string `xml:"name"`
+	Description        string `xml:"description"`
 	MTU                string `xml:"address-family>mtu"`
 	IPAddress          string `xml:"address-family>interface-address>ifa-local"`
 	LocalIndex         int    `xml:"local-index"`
