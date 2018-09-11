@@ -21,6 +21,7 @@ var (
 	rpcCommand             = "<command format=\"text\">%s</command>"
 	rpcCommandXML          = "<command format=\"xml\">%s</command>"
 	rpcCommit              = "<commit-configuration/>"
+	rpcCommitLog           = "<commit-configuration><log>%s</log></commit-configuration>"
 	rpcCommitAt            = "<commit-configuration><at-time>%s</at-time></commit-configuration>"
 	rpcCommitAtLog         = "<commit-configuration><at-time>%s</at-time><log>%s</log></commit-configuration>"
 	rpcCommitCheck         = "<commit-configuration><check/></commit-configuration>"
@@ -338,9 +339,15 @@ func (j *Junos) CommitHistory() (*CommitHistory, error) {
 }
 
 // Commit commits the configuration.
-func (j *Junos) Commit() error {
+func (j *Junos) Commit(message ...string) error {
 	var errs commitResults
-	reply, err := j.Session.Exec(netconf.RawMethod(rpcCommit))
+
+	command := rpcCommit
+	if len(message) > 0 {
+		command = fmt.Sprintf(rpcCommitLog, message[0])
+	}
+
+	reply, err := j.Session.Exec(netconf.RawMethod(command))
 	if err != nil {
 		return err
 	}
@@ -377,7 +384,7 @@ func (j *Junos) CommitAt(time string, message ...string) error {
 	command := fmt.Sprintf(rpcCommitAt, time)
 
 	if len(message) > 0 {
-		command = fmt.Sprintf(rpcCommitAtLog, time)
+		command = fmt.Sprintf(rpcCommitAtLog, time, message[0])
 	}
 
 	reply, err := j.Session.Exec(netconf.RawMethod(command))
